@@ -35,6 +35,7 @@ smallvec = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
+ignore = "0.4.25"
 
 [dev-dependencies]
 assert_matches = { workspace = true }

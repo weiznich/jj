@@ -385,7 +385,7 @@ impl<'a> GlobsMatcherBuilder<'a> {
 
 /// Wrapper for a [`Glob`] parsed with `literal_separator = true`.
 #[derive(Clone)]
-pub struct PathGlobPattern(Glob);
+pub struct PathGlobPattern(pub Glob);
 
 impl Debug for PathGlobPattern {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -182,7 +182,7 @@ pub(crate) async fn cmd_log(
     }
 
     let repo = workspace_command.repo();
-    let matcher = fileset_expression.to_matcher();
+    let matcher = workspace_command.file_matcher(ui, &args.paths)?;
 
     let prio_revset = {
         let text = settings.get_string("revsets.log-graph-prioritize")?;

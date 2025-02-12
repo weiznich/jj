@@ -27,18 +27,18 @@ use jj_lib::merge::Diff;
 use jj_lib::object_id::ObjectId as _;
 use jj_lib::repo::Repo as _;
 use jj_lib::rewrite;
-use jj_lib::rewrite::CommitWithSelection;
 use jj_lib::rewrite::merge_commit_trees;
+use jj_lib::rewrite::CommitWithSelection;
 use tracing::instrument;
 
+use crate::cli_util::compute_commit_location;
+use crate::cli_util::print_unmatched_explicit_paths;
 use crate::cli_util::CommandHelper;
 use crate::cli_util::DiffSelector;
 use crate::cli_util::RevisionArg;
 use crate::cli_util::WorkspaceCommandTransaction;
-use crate::cli_util::compute_commit_location;
-use crate::cli_util::print_unmatched_explicit_paths;
-use crate::command_error::CommandError;
 use crate::command_error::user_error;
+use crate::command_error::CommandError;
 use crate::complete;
 use crate::description_util::add_trailers;
 use crate::description_util::combine_messages_for_editing;
@@ -325,10 +325,9 @@ pub(crate) async fn cmd_squash(
         commit
     };
 
-    let fileset_expression = tx
+    let (matcher, fileset_expression) = tx
         .base_workspace_helper()
-        .parse_file_patterns(ui, &args.paths)?;
-    let matcher = fileset_expression.to_matcher();
+        .file_matcher_and_fileset(ui, &args.paths)?;
     let diff_selector =
         tx.base_workspace_helper()
             .diff_selector(ui, args.tool.as_deref(), args.interactive)?;

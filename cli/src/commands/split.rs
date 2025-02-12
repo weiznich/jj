@@ -34,13 +34,13 @@ use jj_lib::rewrite::RewriteRefsOptions;
 use jj_lib::rewrite::move_commits;
 use tracing::instrument;
 
+use crate::cli_util::compute_commit_location;
+use crate::cli_util::print_unmatched_explicit_paths;
 use crate::cli_util::CommandHelper;
 use crate::cli_util::DiffSelector;
 use crate::cli_util::RevisionArg;
 use crate::cli_util::WorkspaceCommandHelper;
 use crate::cli_util::WorkspaceCommandTransaction;
-use crate::cli_util::compute_commit_location;
-use crate::cli_util::print_unmatched_explicit_paths;
 use crate::command_error::CommandError;
 use crate::complete;
 use crate::description_util::add_trailers;
@@ -214,8 +214,8 @@ impl SplitArgs {
             .check_rewritable([target_commit.id()])
             .await?;
         let repo = workspace_command.repo();
-        let fileset_expression = workspace_command.parse_file_patterns(ui, &self.paths)?;
-        let matcher = fileset_expression.to_matcher();
+        let (matcher, fileset_expression) =
+            workspace_command.file_matcher_and_fileset(ui, &self.paths)?;
         let diff_selector = workspace_command.diff_selector(
             ui,
             self.tool.as_deref(),

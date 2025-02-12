@@ -137,8 +137,7 @@ pub(crate) async fn cmd_restore(
     }
     workspace_command.check_rewritable([to_commit.id()]).await?;
 
-    let fileset_expression = workspace_command.parse_file_patterns(ui, &args.paths)?;
-    let matcher = fileset_expression.to_matcher();
+    let (matcher, fileset_expression) = workspace_command.file_matcher_and_fileset(ui, &args.paths)?;
     let diff_selector =
         workspace_command.diff_selector(ui, args.tool.as_deref(), args.interactive)?;
     let to_tree = to_commit.tree();

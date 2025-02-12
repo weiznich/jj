@@ -224,6 +224,8 @@ pub struct SnapshotOptions<'a> {
     /// (depending on implementation)
     /// return `SnapshotError::NewFileTooLarge`.
     pub max_new_file_size: u64,
+    /// skip git lfs files?
+    pub skip_git_lfs_files: bool,
 }
 
 /// A callback for getting progress updates.
