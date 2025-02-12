@@ -41,7 +41,7 @@ use crate::backend::ChangeId;
 use crate::backend::CommitId;
 use crate::backend::TreeValue;
 use crate::commit::Commit;
-use crate::config::ConfigGetError;
+use crate::config::{ConfigGetError, ConfigGetResultExt};
 use crate::file_util::IoResultExt as _;
 use crate::file_util::PathError;
 use crate::git_backend::GitBackend;
@@ -104,16 +104,22 @@ pub struct GitSettings {
     pub executable_path: PathBuf,
     pub record_synthetic_predecessors: bool,
     pub write_change_id_header: bool,
+    pub ignore_lfs_files: bool,
 }
 
 impl GitSettings {
     pub fn from_settings(settings: &UserSettings) -> Result<Self, ConfigGetError> {
+        let ignore_lfs_files = settings
+            .get_bool("git.ignore-lfs-files")
+            .optional()?
+            .unwrap_or_default();
         Ok(Self {
             abandon_unreachable_commits: settings.get_bool("git.abandon-unreachable-commits")?,
             executable_path: settings.get("git.executable-path")?,
             record_synthetic_predecessors: settings
                 .get_bool("git.record-synthetic-predecessors")?,
             write_change_id_header: settings.get("git.write-change-id-header")?,
+            ignore_lfs_files
         })
     }
 

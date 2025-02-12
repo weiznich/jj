@@ -80,8 +80,7 @@ pub(crate) async fn cmd_resolve(
     args: &ResolveArgs,
 ) -> Result<(), CommandError> {
     let mut workspace_command = command.workspace_helper(ui).await?;
-    let fileset_expression = workspace_command.parse_file_patterns(ui, &args.paths)?;
-    let matcher = fileset_expression.to_matcher();
+    let (matcher, fileset_expression) = workspace_command.file_matcher_and_fileset(ui, &args.paths)?;
     let commit = workspace_command
         .resolve_single_rev(ui, &args.revision)
         .await?;

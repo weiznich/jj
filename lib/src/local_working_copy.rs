@@ -81,6 +81,7 @@ use crate::conflicts::MaterializedTreeValue;
 use crate::conflicts::choose_materialized_conflict_marker_len;
 use crate::conflicts::materialize_merge_result_to_bytes;
 use crate::conflicts::materialize_tree_value;
+use crate::custom_matchers::GitAttributesMatcher;
 pub use crate::eol::EolConversionMode;
 use crate::eol::TargetEolStrategy;
 use crate::file_util::FileIdentity;
@@ -1049,6 +1050,16 @@ impl TreeState {
         Box::new(PrefixMatcher::new(&self.sparse_patterns))
     }
 
+    async fn git_attributes_matcher(&self) -> Box<dyn Matcher> {
+        let merged_tree = self.current_tree().trees().await.unwrap();
+        let tree = merged_tree.first();
+
+        Box::new(
+            GitAttributesMatcher::new(tree, self.working_copy_path())
+                .expect("failed to init GitAttributesMatcher"),
+        )
+    }
+
     pub fn init(
         store: Arc<Store>,
         working_copy_path: PathBuf,
@@ -1300,9 +1311,19 @@ impl TreeState {
             start_tracking_matcher,
             force_tracking_matcher,
             max_new_file_size,
+            skip_git_lfs_files,
         } = options;
 
         let sparse_matcher = self.sparse_matcher();
+        let sparse_matcher = if *skip_git_lfs_files {
+            let git_attributes_matcher = self.git_attributes_matcher().await;
+            Box::new(DifferenceMatcher::new(
+                sparse_matcher,
+                git_attributes_matcher,
+            ))
+        } else {
+            sparse_matcher
+        };
 
         let fsmonitor_clock_needs_save = self.fsmonitor_settings != FsmonitorSettings::None;
         let mut is_dirty = fsmonitor_clock_needs_save;
@@ -2176,7 +2197,14 @@ impl TreeState {
     pub fn check_out(&mut self, new_tree: &MergedTree) -> Result<CheckoutStats, CheckoutError> {
         let old_tree = self.tree.clone();
         let stats = self
-            .update(&old_tree, new_tree, self.sparse_matcher().as_ref())
+            .update(
+                &old_tree,
+                new_tree,
+                &DifferenceMatcher::new(
+                    self.sparse_matcher().as_ref(),
+                    self.git_attributes_matcher().block_on(),
+                ),
+            )
             .block_on()?;
         self.tree = new_tree.clone();
         Ok(stats)

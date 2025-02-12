@@ -79,6 +79,7 @@ use jj_lib::fileset::FilesetAliasesMap;
 use jj_lib::fileset::FilesetDiagnostics;
 use jj_lib::fileset::FilesetExpression;
 use jj_lib::fileset::FilesetParseContext;
+use jj_lib::git::GitSettings;
 use jj_lib::gitignore::GitIgnoreError;
 use jj_lib::gitignore::GitIgnoreFile;
 use jj_lib::id_prefix::IdPrefixContext;
@@ -1598,6 +1599,41 @@ to the current parents may contain changes from multiple commits.
         self.path_converter().parse_file_path(input)
     }
 
+    pub fn file_matcher_and_fileset(
+        &self,
+        ui: &Ui,
+        values: &[String],
+    ) -> Result<(Box<dyn Matcher>, FilesetExpression), CommandError> {
+        let fileset_expression = self.parse_file_patterns(ui, values)?;
+        let mut matcher = fileset_expression.to_matcher();
+        if GitSettings::from_settings(self.settings())?.ignore_lfs_files {
+            let root = self.workspace().workspace_root();
+            if let Some(wc_commit) = self
+                .get_wc_commit_id()
+                .map(|id| self.repo().store().get_commit(id))
+                .transpose()?
+            {
+                let tree = wc_commit.tree().trees().block_on()?;
+                matcher = Box::new(jj_lib::matchers::DifferenceMatcher::new(
+                    matcher,
+                    jj_lib::custom_matchers::GitAttributesMatcher::new(tree.first(), root)
+                        .expect("gitattributes matcher failed"),
+                ));
+            }
+        }
+        Ok((matcher, fileset_expression))
+    }
+
+    /// Parses the given strings as file patterns, convert it to a matcher and
+    /// apply Git LFS exclusions if requested
+    pub fn file_matcher(
+        &self,
+        ui: &Ui,
+        values: &[String],
+    ) -> Result<Box<dyn Matcher>, CommandError> {
+        Ok(self.file_matcher_and_fileset(ui, values)?.0)
+    }
+
     /// Parses the given strings as file patterns.
     pub fn parse_file_patterns(
         &self,
@@ -1656,6 +1692,7 @@ to the current parents may contain changes from multiple commits.
             start_tracking_matcher,
             force_tracking_matcher: &NothingMatcher,
             max_new_file_size,
+            skip_git_lfs_files: GitSettings::from_settings(self.settings())?.ignore_lfs_files,
         })
     }
 

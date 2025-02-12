@@ -96,8 +96,7 @@ pub(crate) async fn cmd_absorb(
         .parse_union_revsets(ui, &args.into)?
         .resolve()?;
 
-    let fileset_expression = workspace_command.parse_file_patterns(ui, &args.paths)?;
-    let matcher = fileset_expression.to_matcher();
+    let (matcher, fileset_expression) = workspace_command.file_matcher_and_fileset(ui, &args.paths)?;
 
     print_unmatched_explicit_paths(
         ui,

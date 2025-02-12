@@ -321,6 +321,7 @@ impl WorkspacePool {
             // TODO: read from current wc/settings
             max_new_file_size: 64_000_u64, // 64 MB for now
             force_tracking_matcher: &NothingMatcher,
+            skip_git_lfs_files: true,
         }
     }
 

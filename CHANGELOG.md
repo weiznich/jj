@@ -16,6 +16,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### New features
 
+* Add support for just ignoring Git LFS files by parsing `.gitattribute` files and automatically
+  adding the relevant files to the internal ignore list
+
 ### Fixed bugs
 
 ## [0.45.1] - 2026-09-03
@@ -1889,54 +1892,7 @@ Thanks to the people who made this release happen!
 
 ### New features
 
-* `jj workspace list` now accepts `-T`/`--template` option to customize its
-  output via templates.
-
-* Added `templates.workspace_list` template to customize the output of
-  `jj workspace list`.
-
-* `jj fix` now buffers the standard error stream from subprocesses and emits
-  the output from each all at once. The file name is printed before the output.
-
-* `jj status` now collapses fully untracked directories into one line.
-  It still fully traverses them while snapshotting but they won't clutter up
-  the output with all of their contents.
-
-* Add the `working-copy.eol-conversion` config which is similar to the git
-  `core.autocrlf` config. A heuristics is used to detect if a file is a binary
-  file to prevent the EOL conversion from changing binary files unexpectedly.
-
-* Add a `.parents()` method to the
-  [`Operation`](docs/templates.md#operation-type) type in the templating
-  language.
-
-* Merge tools config can now explicitly forbid using them as diff editors or
-  diff formatters. Built-in tools that do not function well as diff editing
-  tools or as diff formatters will now report an error when used as such.
-
-* `jj diffedit` now accepts filesets to edit only the specified paths.
-
-* AnnotationLine objects in templates now have a `original_line_number() ->
-  Integer` method.
-
-* Commit templates now support `.files()` to list all existing files at that
-  revision.
-
-* Glob patterns now support `{foo,bar}` syntax. There may be subtle behavior
-  changes as we use the [globset](https://crates.io/crates/globset) library now.
-
-* The new `bisect(x)` revset function can help bisect a range of commits to
-  find when a bug was introduced.
-
-* New `first_parent()` and `first_ancestors()` revset functions which are
-  similar to `parents()` and `ancestors()`, but only traverse the first parent
-  of each commit (similar to Git's `--first-parent` option).
-
-* New `signing.backends.ssh.revocation-list` config for specifying a list of revoked
-  public keys for commit signature verification.
-
-* `jj fix` commands now replace `$root` with the workspace's root path. This is
-  useful for tools stored inside the workspace.
+(??)
 
 ### Fixed bugs
 

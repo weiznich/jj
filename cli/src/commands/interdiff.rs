@@ -18,9 +18,9 @@ use clap::ArgGroup;
 use clap_complete::ArgValueCompleter;
 use tracing::instrument;
 
+use crate::cli_util::print_unmatched_explicit_paths;
 use crate::cli_util::CommandHelper;
 use crate::cli_util::RevisionArg;
-use crate::cli_util::print_unmatched_explicit_paths;
 use crate::command_error::CommandError;
 use crate::complete;
 use crate::diff_util::DiffFormatArgs;
@@ -93,8 +93,8 @@ pub(crate) async fn cmd_interdiff(
         .resolve_single_rev(ui, args.to.as_ref().unwrap_or(&RevisionArg::AT))
         .await?;
     let repo = workspace_command.repo();
-    let fileset_expression = workspace_command.parse_file_patterns(ui, &args.paths)?;
-    let matcher = fileset_expression.to_matcher();
+    let (matcher, fileset_expression) =
+        workspace_command.file_matcher_and_fileset(ui, &args.paths)?;
 
     print_unmatched_explicit_paths(
         ui,

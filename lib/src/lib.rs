@@ -67,6 +67,7 @@ pub mod local_working_copy;
 pub mod lock;
 pub use jj_core::matchers;
 pub use jj_core::merge;
+pub mod custom_matchers;
 pub mod merged_tree;
 pub mod merged_tree_builder;
 pub use jj_core::object_id;

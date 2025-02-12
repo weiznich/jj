@@ -48,8 +48,8 @@ pub(crate) async fn cmd_file_untrack(
     args: &FileUntrackArgs,
 ) -> Result<(), CommandError> {
     let mut workspace_command = command.workspace_helper(ui).await?;
-    let fileset_expression = workspace_command.parse_file_patterns(ui, &args.paths)?;
-    let matcher = fileset_expression.to_matcher();
+    let (matcher, fileset_expression) =
+        workspace_command.file_matcher_and_fileset(ui, &args.paths)?;
     let auto_tracking_matcher = workspace_command.auto_tracking_matcher(ui)?;
     let options =
         workspace_command.snapshot_options_with_start_tracking_matcher(&auto_tracking_matcher)?;

@@ -95,9 +95,7 @@ pub(crate) async fn cmd_commit(
         .store()
         .get_commit_async(commit_id)
         .await?;
-    let matcher = workspace_command
-        .parse_file_patterns(ui, &args.paths)?
-        .to_matcher();
+    let matcher = workspace_command.file_matcher(ui, &args.paths)?;
     let advanceable_bookmarks =
         workspace_command.get_advanceable_bookmarks(ui, commit.parent_ids())?;
     let diff_selector =
